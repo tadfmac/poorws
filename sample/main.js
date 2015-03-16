@@ -1,4 +1,4 @@
-var ws = new poorws("ws://mz4u.net:3000/");
+var ws = new poorws("ws://hoge.net/");
 
 ws.onStatusChange = function(status){
 	$("#status").text(status);
