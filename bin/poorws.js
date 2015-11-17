@@ -1,6 +1,7 @@
 // poorws.js
 // simple webSocket wrapper
 // 2015.03.16 by D.F.Mac.
+// 2015.11.15 fix bug
 
 var poorws = function(url,options){
   this.ws = null;
@@ -73,7 +74,9 @@ var poorws = function(url,options){
             }
           }
           if(this.onMessage != null){
-            this.onMessage(event);
+            if(event.data != "ack"){
+              this.onMessage(event);
+            }
           }
         }.bind(this);
       }
