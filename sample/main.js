@@ -1,4 +1,4 @@
-var ws = new poorws("ws://hoge.net/");
+var ws = new Poorws("ws://localhost:3000");
 
 ws.onStatusChange = function(status){
 	$("#status").text(status);
