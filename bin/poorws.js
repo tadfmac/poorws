@@ -3,38 +3,42 @@
 // 2015.03.16 by D.F.Mac.
 // 2015.11.15 fix bug
 
-var poorws = function(url,options){
-  this.ws = null;
-  this.host = null;
-  this.onMessage = null;
-  this.onOpen = null;
-  this.onClose = null;
-  this.onError = null;
-  this.onMessage = null;
-  this.onStatusChanfe = null;
-  this.polling = false;
-  this.pollingTimer = null;
-  this.expire = 20000;
-  this.interval = 5000;
-  if(typeof options !== "undefined"){
-    if(typeof options.polling !== "undefined"){
-      this.polling = options.polling;
+var Poorws = class Poorws{
+  constructor(url, options){
+    this.ws = null;
+    this.host = null;
+    this.onMessage = null;
+    this.onOpen = null;
+    this.onClose = null;
+    this.onError = null;
+    this.onMessage = null;
+    this.onStatusChange = null;
+    this.polling = false;
+    this.pollingTimer = null;
+    this.expire = 20000;
+    this.interval = 5000;
+    if(typeof url == null){
+      console.log("poorws:first argument must be url");
+      return;
+    }else{
+      this.host = url;
     }
-    if(typeof options.interval !== "undefined"){
-      this.interval = options.interval;
+    if(typeof options !== "undefined"){
+      if(typeof options.polling !== "undefined"){
+        this.polling = options.polling;
+      }
+      if(typeof options.interval !== "undefined"){
+        this.interval = options.interval;
+      }
+      if(typeof options.expire !== "undefined"){
+        this.expire = options.expire;
+      }
     }
-    if(typeof options.expire !== "undefined"){
-      this.expire = options.expire;
-    }
-  }
-  if(typeof url == null){
-    console.log("poorws:url error!!!!!!!!")
-    return;
-  }else{
-    this.host = url;
+    this.wsconnect();
   }
 
-  this.wscontext = function(){
+  // 非同期なのでPromiseなどで処理しないとコネクション張られる前にsendメソッドなどを呼ばれてエラーを吐く
+  wsconnect(){
     if(navigator.onLine != false){
       if(this.ws == null || this.ws.readyState >= 2){
         this.ws = new WebSocket(this.host);
@@ -47,7 +51,7 @@ var poorws = function(url,options){
             this.onStatusChange(this.ws.readyState);
           }
         }.bind(this);
-        this.ws.onclose =function(){
+        this.ws.onclose = function(){
           console.log("poorws:ws.onclose");
           if(this.onClose != null){
             this.onClose();
@@ -56,13 +60,13 @@ var poorws = function(url,options){
             this.onStatusChange(this.ws.readyState);
           }
         }.bind(this);
-        this.ws.onerror = function (error){
+        this.ws.onerror = function(error){
           console.log("poorws:ws.onerror");
           if(this.onError != null){
             this.onError(error);
           }
         }.bind(this);
-        this.ws.onmessage = function (event){
+        this.ws.onmessage = function(event){
           console.log("poorws:ws.onmessage: "+event.data);
           if(this.polling == true){
             if(event.data == "ack"){
@@ -87,7 +91,7 @@ var poorws = function(url,options){
             console.log("set");
             this.pollingTimer = setTimeout(function(){
               this.polling();
-            }.bind(this),this.expire);
+            }.bind(this), this.expire);
           }
         }
       }
@@ -100,36 +104,32 @@ var poorws = function(url,options){
         }
       }
     }
-  }.bind(this);
+  }
 
-  this.send = function(message){
+  send(message){
     if((this.ws != null)&&(this.ws.readyState == 1)){
       this.ws.send(message);
+      console.log("poorws:send message: " + message);
     }else{
       console.log("poorws:send() error!!!!!");
     }
-  }.bind(this);
+  }
 
-  this.close = function(){
+  close(){
     if((this.ws != null)&&(this.ws.readyState == 1)){
       this.ws.close();
     }else{
       console.log("poorws:close() error!!!!!");
     }
-  }.bind(this);
+  }
 
-  this.polling = function(){
+  polling(){
     console.log("poorws:polling: expired");
     this.ws.close();
     if(this.onStatusChange != null){
       this.onStatusChange(this.ws.readyState);
     }
     this.pollingTimer = null;
-  }.bind(this);
-
-  setInterval(function(){
-    this.wscontext();
-  }.bind(this),this.interval);
-
-};
+  }
+}
 
