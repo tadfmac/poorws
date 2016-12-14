@@ -3,7 +3,7 @@
 // 2015.03.16 by D.F.Mac.
 // 2015.11.15 fix bug
 
-var Poorws = class Poorws{
+var poorws = class Poorws{
   constructor(url, options){
     this.ws = null;
     this.host = null;
